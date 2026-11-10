@@ -1,0 +1,31 @@
+const ROLES = {
+  SUPERADMIN: 'superadmin',
+  AUTHOR: 'author',
+  CUSTOMER: 'customer'
+};
+
+const ROLE_IDS = {
+  SUPERADMIN: 1,
+  AUTHOR: 2,
+  CUSTOMER: 3
+};
+
+const USER_STATUS = {
+  APPROVED: 'APPROVED',
+  PENDING: 'PENDING',
+  REJECTED: 'REJECTED'
+};
+
+const ORDER_STATUS = {
+  CONFIRMED: 'CONFIRMED',
+  PROCESSING: 'PROCESSING',
+  DELIVERED: 'DELIVERED',
+  CANCELLED: 'CANCELLED'
+};
+
+module.exports = {
+  ROLES,
+  ROLE_IDS,
+  USER_STATUS,
+  ORDER_STATUS
+};

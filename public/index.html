@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BookWorm — Next-Gen Responsive eCommerce Bookstore</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <!-- Header / Navigation -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand" id="brand-logo">
+        <div class="brand-icon">
+          <i data-lucide="book-marked"></i>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">BookWorm</span>
+          <span class="brand-badge">3-Role RBAC Store</span>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="search-box">
+        <i data-lucide="search" class="search-icon"></i>
+        <input type="text" id="search-input" placeholder="Search by title, author, or keyword...">
+        <button id="search-clear-btn" class="search-clear-btn hidden"><i data-lucide="x"></i></button>
+      </div>
+
+      <!-- Right Header Actions (Auth & Cart) -->
+      <div class="header-actions">
+        <!-- User Profile / Auth State -->
+        <div id="auth-section" class="auth-section">
+          <button id="login-btn" class="btn btn-outline">
+            <i data-lucide="user"></i>
+            <span>Sign In</span>
+          </button>
+          
+          <div id="user-profile-menu" class="user-profile hidden">
+            <div class="user-avatar" id="user-avatar">SD</div>
+            <div class="user-meta">
+              <span class="user-name" id="user-name">Sumit Dobriyal</span>
+              <span class="role-badge role-superadmin" id="user-role-badge">Super Admin</span>
+            </div>
+            <div class="dropdown-content">
+              <div class="dropdown-header">
+                <p class="dropdown-user-email" id="user-email">dobriyal.sumit@gmail.com</p>
+                <p class="dropdown-user-role" id="dropdown-role-text">Role: Super Admin</p>
+                <p class="dropdown-user-status" id="dropdown-status-text"></p>
+              </div>
+
+              <!-- Super Admin Action: Author Management -->
+              <button id="superadmin-authors-btn" class="dropdown-item hidden">
+                <i data-lucide="shield-check"></i>
+                <span>Author Approvals & Management</span>
+              </button>
+
+              <!-- Author / SuperAdmin Action: Add Book -->
+              <button id="author-add-book-btn" class="dropdown-item hidden">
+                <i data-lucide="plus-circle"></i>
+                <span>Publish New Book</span>
+              </button>
+
+              <button id="logout-btn" class="dropdown-item danger">
+                <i data-lucide="log-out"></i>
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cart Trigger with Animated Badge Count (Available for Customers & all users) -->
+        <button id="cart-btn" class="cart-btn" aria-label="Shopping Cart">
+          <div class="cart-icon-wrapper">
+            <i data-lucide="shopping-bag"></i>
+            <span id="cart-counter" class="cart-badge">0</span>
+          </div>
+          <span class="cart-text">Cart</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Author Status Notification Banner (shown if Author account is pending) -->
+  <div id="author-pending-banner" class="author-status-banner hidden">
+    <div class="banner-content">
+      <i data-lucide="clock"></i>
+      <span><strong>Author Application Pending:</strong> Your author profile is awaiting review and approval by Super Admin <strong>Sumit Dobriyal</strong>. Book authoring tools will be unlocked once approved.</span>
+    </div>
+  </div>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <span class="hero-tag"><i data-lucide="shield-check"></i> 3-Tier Enterprise RBAC Architecture</span>
+      <h1>Empowering Readers, Authors & Curators</h1>
+      <p>Discover handpicked software architecture, business leadership, science, and mindset classics. Powered by an Express REST backend and relational SQL database with Super Admin governance.</p>
+      <div class="hero-cta">
+        <button class="btn btn-primary" id="explore-books-btn">
+          <span>Explore Catalog</span>
+          <i data-lucide="arrow-right"></i>
+        </button>
+        <button class="btn btn-glass" id="quick-demo-accounts-btn">
+          <i data-lucide="users"></i>
+          <span>Switch 3-Role Demo Account</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Store Layout -->
+  <main class="store-container">
+    <!-- Category Filter Bar -->
+    <section class="category-section">
+      <div class="section-header">
+        <div>
+          <h2>Book Repository</h2>
+          <p class="section-subtitle">Browse books published by verified authors</p>
+        </div>
+        <div class="sort-wrapper">
+          <label for="sort-select"><i data-lucide="arrow-down-up"></i> Sort by:</label>
+          <select id="sort-select">
+            <option value="featured">Featured</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+            <option value="rating">Highest Rated</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="category-pills" id="category-pills">
+        <button class="pill active" data-category="all">
+          <i data-lucide="layers"></i>
+          <span>All Books</span>
+        </button>
+        <!-- Dynamically loaded categories -->
+      </div>
+    </section>
+
+    <!-- Books Grid Section -->
+    <section class="books-section">
+      <div class="catalog-status">
+        <span id="books-count-label">Showing all books</span>
+      </div>
+
+      <div id="books-grid" class="books-grid">
+        <!-- Dynamic Book Cards -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="no-books-found" class="empty-state hidden">
+        <i data-lucide="book-x"></i>
+        <h3>No books found</h3>
+        <p>Try searching for a different keyword or select another category.</p>
+        <button class="btn btn-outline" id="reset-filter-btn">Reset Filters</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-col">
+        <div class="brand">
+          <div class="brand-icon">
+            <i data-lucide="book-marked"></i>
+          </div>
+          <span class="brand-title">BookWorm</span>
+        </div>
+        <p>Responsive eCommerce bookstore designed and engineered with IBM Bob agentic workflows, Node.js Express server, and secure SQLite database.</p>
+      </div>
+      <div class="footer-col">
+        <h4>3 Roles Permission Model</h4>
+        <ul>
+          <li><strong>👑 Super Admin (Sumit Dobriyal):</strong> Manages & approves book authors</li>
+          <li><strong>✍️ Book Author:</strong> Adds/edits/removes book content upon approval</li>
+          <li><strong>🛍️ General Customer:</strong> Browses, purchases, and submits book ratings</li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Demo Accounts</h4>
+        <p class="demo-acc-text"><strong>👑 Super Admin:</strong> dobriyal.sumit@gmail.com (SuperAdmin@123)</p>
+        <p class="demo-acc-text"><strong>✍️ Approved Author:</strong> sam.newman@bookworm.io (Author@123)</p>
+        <p class="demo-acc-text"><strong>⏳ Pending Author:</strong> jane.austen@bookworm.io (Author@123)</p>
+        <p class="demo-acc-text"><strong>🛍️ Customer:</strong> john.doe@example.com (User@123)</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 BookWorm Demo. Developed using IBM BOB Agentic Tools.</p>
+    </div>
+  </footer>
+
+  <!-- ==================== MODALS & DRAWERS ==================== -->
+
+  <!-- 1. Cart Drawer -->
+  <div id="cart-drawer-overlay" class="modal-overlay hidden">
+    <div class="cart-drawer">
+      <div class="drawer-header">
+        <div class="drawer-title">
+          <i data-lucide="shopping-bag"></i>
+          <h3>Your Shopping Cart</h3>
+          <span class="cart-items-count-badge" id="drawer-items-count">0 items</span>
+        </div>
+        <button id="close-cart-btn" class="icon-close-btn" aria-label="Close cart">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div id="cart-items-container" class="drawer-body">
+        <!-- Rendered Cart Items -->
+      </div>
+
+      <div id="cart-empty-message" class="cart-empty hidden">
+        <div class="empty-icon-circle">
+          <i data-lucide="shopping-cart"></i>
+        </div>
+        <h4>Your cart is empty</h4>
+        <p>Browse our catalog and add your favorite books!</p>
+        <button id="cart-shop-now-btn" class="btn btn-primary">Browse Catalog</button>
+      </div>
+
+      <div id="cart-footer" class="drawer-footer">
+        <div class="cart-summary-lines">
+          <div class="summary-line">
+            <span>Total Items</span>
+            <span id="cart-total-items-qty" class="bold">0</span>
+          </div>
+          <div class="summary-line">
+            <span>Subtotal</span>
+            <span id="cart-subtotal-price" class="bold">$0.00</span>
+          </div>
+          <div class="summary-line">
+            <span>Estimated Shipping</span>
+            <span class="text-success font-semibold">FREE</span>
+          </div>
+          <div class="summary-line total-highlight">
+            <span>Total Cost</span>
+            <span id="cart-total-price" class="price-big">$0.00</span>
+          </div>
+        </div>
+
+        <button id="proceed-to-checkout-btn" class="btn btn-primary btn-block">
+          <span>Proceed to Checkout</span>
+          <i data-lucide="chevron-right"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Checkout Modal -->
+  <div id="checkout-modal-overlay" class="modal-overlay hidden">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge">
+            <i data-lucide="credit-card"></i>
+          </div>
+          <div>
+            <h3>Secure Checkout</h3>
+            <p class="modal-subtitle">Review items, provide delivery address & choose payment method</p>
+          </div>
+        </div>
+        <button id="close-checkout-btn" class="icon-close-btn" aria-label="Close checkout">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body checkout-layout">
+        <!-- Left: Checkout Forms -->
+        <div class="checkout-forms">
+          <!-- User info preview -->
+          <div class="checkout-step-card">
+            <h4><i data-lucide="user-check"></i> 1. Contact Information</h4>
+            <div class="user-info-box" id="checkout-user-info-box">
+              <span id="checkout-user-name" class="font-bold">John Doe</span>
+              <span id="checkout-user-email" class="text-muted">john.doe@example.com</span>
+              <span class="role-pill" id="checkout-user-role">Customer</span>
+            </div>
+          </div>
+
+          <!-- Shipping Address -->
+          <div class="checkout-step-card">
+            <h4><i data-lucide="map-pin"></i> 2. Shipping Address</h4>
+            <div class="form-group">
+              <label for="checkout-address">Delivery Street Address *</label>
+              <textarea id="checkout-address" rows="3" placeholder="Flat / House No, Street name, City, State, ZIP code">124 Innovation Way, Tech Park, Suite 400, New York, NY 10001</textarea>
+            </div>
+          </div>
+
+          <!-- Payment Methods -->
+          <div class="checkout-step-card">
+            <h4><i data-lucide="wallet"></i> 3. Payment Method</h4>
+            <div class="payment-options">
+              <label class="payment-option selected">
+                <input type="radio" name="payment_method" value="Credit / Debit Card" checked>
+                <div class="payment-option-body">
+                  <i data-lucide="credit-card"></i>
+                  <div>
+                    <strong>Credit / Debit Card</strong>
+                    <p class="small-text">Visa, Mastercard, Amex, RuPay</p>
+                  </div>
+                </div>
+              </label>
+
+              <label class="payment-option">
+                <input type="radio" name="payment_method" value="Net Banking">
+                <div class="payment-option-body">
+                  <i data-lucide="building-2"></i>
+                  <div>
+                    <strong>Net Banking</strong>
+                    <p class="small-text">Instant transfer from all major banks</p>
+                  </div>
+                </div>
+              </label>
+
+              <label class="payment-option">
+                <input type="radio" name="payment_method" value="UPI / Cash on Delivery">
+                <div class="payment-option-body">
+                  <i data-lucide="smartphone"></i>
+                  <div>
+                    <strong>UPI / Cash on Delivery</strong>
+                    <p class="small-text">Google Pay, PhonePe, Apple Pay or Cash</p>
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Order Summary Breakdown -->
+        <div class="checkout-summary-pane">
+          <div class="order-summary-box">
+            <h4>Order Summary</h4>
+            <div id="checkout-items-list" class="checkout-items-list">
+              <!-- Rendered miniature items list -->
+            </div>
+
+            <div class="cost-breakdown">
+              <div class="cost-row">
+                <span>Total Items</span>
+                <span id="summary-total-items-qty">0</span>
+              </div>
+              <div class="cost-row">
+                <span>Items Subtotal</span>
+                <span id="summary-subtotal-cost">$0.00</span>
+              </div>
+              <div class="cost-row">
+                <span>Standard Delivery</span>
+                <span class="text-success font-semibold">FREE</span>
+              </div>
+              <div class="cost-row total-row">
+                <span>Grand Total</span>
+                <span id="summary-grand-total" class="price-highlight">$0.00</span>
+              </div>
+            </div>
+
+            <button id="place-order-btn" class="btn btn-primary btn-block btn-lg">
+              <i data-lucide="lock"></i>
+              <span>Complete & Place Order</span>
+            </button>
+            <p class="security-note"><i data-lucide="shield-check"></i> 256-bit Encrypted Transaction & SQL Guaranteed Persistence</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Thanks / Order Success Modal -->
+  <div id="thanks-modal-overlay" class="modal-overlay hidden">
+    <div class="modal-card modal-center thanks-card">
+      <div class="thanks-icon-wrapper">
+        <i data-lucide="check-circle-2"></i>
+      </div>
+      <h2>Thank You for Your Order!</h2>
+      <p class="thanks-subtitle">Your transaction was completed successfully and recorded into our SQL database.</p>
+
+      <div class="receipt-box" id="order-receipt-box">
+        <div class="receipt-header">
+          <div>
+            <span class="receipt-label">Order Reference</span>
+            <span class="receipt-value" id="receipt-order-id">ORD-000001</span>
+          </div>
+          <div>
+            <span class="receipt-label">Status</span>
+            <span class="badge-success">CONFIRMED</span>
+          </div>
+        </div>
+
+        <div class="receipt-details">
+          <div class="receipt-detail-item">
+            <span class="receipt-label">Customer</span>
+            <span class="receipt-value" id="receipt-customer-name">John Doe</span>
+          </div>
+          <div class="receipt-detail-item">
+            <span class="receipt-label">Total Items</span>
+            <span class="receipt-value" id="receipt-total-items">3 Books</span>
+          </div>
+          <div class="receipt-detail-item">
+            <span class="receipt-label">Total Cost</span>
+            <span class="receipt-value text-primary font-bold" id="receipt-total-cost">$98.50</span>
+          </div>
+          <div class="receipt-detail-item">
+            <span class="receipt-label">Payment Method</span>
+            <span class="receipt-value" id="receipt-payment-method">Credit Card</span>
+          </div>
+          <div class="receipt-detail-item full-width">
+            <span class="receipt-label">Delivering To</span>
+            <span class="receipt-value" id="receipt-address">124 Innovation Way, Tech Park, NY</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="thanks-actions">
+        <button id="thanks-continue-btn" class="btn btn-primary btn-block">
+          <i data-lucide="arrow-left"></i>
+          <span>Continue Shopping</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Auth (Login & Register) Modal -->
+  <div id="auth-modal-overlay" class="modal-overlay hidden">
+    <div class="modal-card auth-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge">
+            <i data-lucide="key-round"></i>
+          </div>
+          <div>
+            <h3 id="auth-modal-title">Sign In to BookWorm</h3>
+            <p class="modal-subtitle">Access your role-based account & features</p>
+          </div>
+        </div>
+        <button id="close-auth-btn" class="icon-close-btn" aria-label="Close modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Auth Tabs -->
+        <div class="auth-tabs">
+          <button id="tab-login" class="auth-tab active">Sign In</button>
+          <button id="tab-register" class="auth-tab">Create Account</button>
+        </div>
+
+        <!-- Quick 3-Role Demo Switcher -->
+        <div class="demo-accounts-box">
+          <div class="demo-accounts-title">
+            <i data-lucide="sparkles"></i>
+            <span>Quick Fill 3-Role Demo Credentials:</span>
+          </div>
+          <div class="demo-pill-group">
+            <button class="demo-user-pill" data-email="dobriyal.sumit@gmail.com" data-pass="SuperAdmin@123" data-role="superadmin">
+              <span class="role-tag-sm superadmin">👑 Super Admin</span> Sumit Dobriyal (dobriyal.sumit@gmail.com)
+            </button>
+            <button class="demo-user-pill" data-email="sam.newman@bookworm.io" data-pass="Author@123" data-role="author">
+              <span class="role-tag-sm author">✍️ Author (Approved)</span> Sam Newman (sam.newman@bookworm.io)
+            </button>
+            <button class="demo-user-pill" data-email="jane.austen@bookworm.io" data-pass="Author@123" data-role="author">
+              <span class="role-tag-sm pending">⏳ Author (Pending)</span> Jane Austen (jane.austen@bookworm.io)
+            </button>
+            <button class="demo-user-pill" data-email="john.doe@example.com" data-pass="User@123" data-role="customer">
+              <span class="role-tag-sm customer">🛍️ Customer</span> John Doe (john.doe@example.com)
+            </button>
+          </div>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form">
+          <div class="form-group">
+            <label for="login-email">Email Address</label>
+            <div class="input-with-icon">
+              <i data-lucide="mail"></i>
+              <input type="email" id="login-email" required placeholder="name@example.com" value="dobriyal.sumit@gmail.com">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <div class="input-with-icon">
+              <i data-lucide="lock"></i>
+              <input type="password" id="login-password" required placeholder="••••••••" value="SuperAdmin@123">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="submit-login-btn">
+            <span>Sign In</span>
+            <i data-lucide="arrow-right"></i>
+          </button>
+        </form>
+
+        <!-- Register Form with Role Selection (Superadmin is read-only) -->
+        <form id="register-form" class="auth-form hidden">
+          <div class="form-group">
+            <label for="reg-name">Full Name *</label>
+            <div class="input-with-icon">
+              <i data-lucide="user"></i>
+              <input type="text" id="reg-name" required placeholder="e.g. Rachel Author or Mark Customer">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-email">Email Address *</label>
+            <div class="input-with-icon">
+              <i data-lucide="mail"></i>
+              <input type="email" id="reg-email" required placeholder="name@example.com">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="reg-password">Password *</label>
+            <div class="input-with-icon">
+              <i data-lucide="lock"></i>
+              <input type="password" id="reg-password" required placeholder="Min. 6 characters">
+            </div>
+          </div>
+
+          <!-- Role Selection for Signup -->
+          <div class="form-group">
+            <label>Select Your Account Role *</label>
+            <div class="role-selector-radios">
+              <label class="role-radio-card selected">
+                <input type="radio" name="signup_role" value="customer" checked>
+                <div class="role-radio-body">
+                  <div class="role-radio-title">
+                    <i data-lucide="shopping-bag"></i>
+                    <strong>General Customer</strong>
+                  </div>
+                  <p class="small-text">Instant access to browse books, add to cart, checkout, and submit ratings.</p>
+                </div>
+              </label>
+
+              <label class="role-radio-card">
+                <input type="radio" name="signup_role" value="author">
+                <div class="role-radio-body">
+                  <div class="role-radio-title">
+                    <i data-lucide="pen-tool"></i>
+                    <strong>Book Author</strong>
+                  </div>
+                  <p class="small-text">Publish and manage books. <em>(Requires Super Admin approval upon signup)</em></p>
+                </div>
+              </label>
+            </div>
+            <p class="superadmin-note"><i data-lucide="info"></i> <em>Note: Super Admin role is read-only and maintained exclusively by platform governance.</em></p>
+          </div>
+
+          <!-- Optional Author Bio Field (Shown if Author selected) -->
+          <div class="form-group hidden" id="author-bio-field">
+            <label for="reg-bio">Author Bio / Genre Specialization</label>
+            <textarea id="reg-bio" rows="2" placeholder="Tell Super Admin about your publications and writing focus..."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg" id="submit-reg-btn">
+            <span>Create Account</span>
+            <i data-lucide="user-plus"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Super Admin Author Management Modal -->
+  <div id="superadmin-modal-overlay" class="modal-overlay hidden">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge" style="background-color: #fee2e2; color: #b91c1c;">
+            <i data-lucide="shield-check"></i>
+          </div>
+          <div>
+            <h3>Super Admin Author Management</h3>
+            <p class="modal-subtitle">Review author applications, approve/reject permissions, and govern publishers</p>
+          </div>
+        </div>
+        <button id="close-superadmin-modal-btn" class="icon-close-btn" aria-label="Close modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="admin-panel-toolbar">
+          <div>
+            <h4 id="authors-table-count">Authors (0)</h4>
+            <p class="small-text">Authors must be approved before they can publish or edit books</p>
+          </div>
+          <button id="admin-create-author-btn" class="btn btn-outline">
+            <i data-lucide="user-plus"></i>
+            <span>Add Verified Author</span>
+          </button>
+        </div>
+
+        <!-- Authors Table -->
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Author</th>
+                <th>Email</th>
+                <th>Bio / Details</th>
+                <th>Published Books</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="authors-table-body">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Author Book Publishing Modal -->
+  <div id="author-book-modal-overlay" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-icon-badge">
+            <i data-lucide="book-plus"></i>
+          </div>
+          <div>
+            <h3 id="book-modal-heading">Publish New Book</h3>
+            <p class="modal-subtitle">Book Author & Super Admin Content Management</p>
+          </div>
+        </div>
+        <button id="close-author-book-modal-btn" class="icon-close-btn" aria-label="Close modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form id="author-book-form">
+          <input type="hidden" id="edit-book-id" value="">
+          <div class="form-group">
+            <label for="book-title">Book Title *</label>
+            <input type="text" id="book-title" required placeholder="e.g. Building Microservices">
+          </div>
+          <div class="form-group">
+            <label for="book-author">Author Name</label>
+            <input type="text" id="book-author" placeholder="Defaults to your author name">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="book-category">Category *</label>
+              <select id="book-category" required>
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="book-price">Price ($) *</label>
+              <input type="number" id="book-price" step="0.01" min="1" required placeholder="39.99">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="book-desc">Description</label>
+            <textarea id="book-desc" rows="3" placeholder="Brief synopsis or book overview..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="book-cover">Cover Image URL</label>
+            <input type="url" id="book-cover" placeholder="https://images.unsplash.com/...">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" id="submit-book-btn">
+            <i data-lucide="check"></i>
+            <span>Save & Publish to SQL Repository</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Decoupled UI Presentation Layer Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
